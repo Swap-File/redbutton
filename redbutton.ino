@@ -121,8 +121,9 @@ const char string_12[] PROGMEM = "Because of the technical difficulties we are c
 const char string_13[] PROGMEM = "Some emergency testing may require prolonged interaction with lethal military androids.";
 const char string_14[] PROGMEM = "Testing is the future, and the future starts with you.";
 const char string_15[] PROGMEM = "To ensure that sufficient power remains for core testing protocols, all safety devices have been disabled.";
+const char string_16[] PROGMEM = "For your privacy, test results are not being relayed via satelite to long term storage for future review.";
 
-const char* const string_table[] PROGMEM = {string_0, string_1, string_2, string_3, string_4, string_5,  string_6, string_7, string_8, string_9, string_10, string_11, string_12, string_13, string_14, string_15};
+const char* const string_table[] PROGMEM = {string_0, string_1, string_2, string_3, string_4, string_5,  string_6, string_7, string_8, string_9, string_10, string_11, string_12, string_13, string_14, string_15, string_16};
 
 int8_t icons[NUMFLAKES][3];//snowflake positions
 
@@ -231,10 +232,11 @@ void loop() {
         //print counter center padded
         display.setCursor(0, 0);
         //10 digits
-        if (button_presses < 100) display.print(' ');
-        if (button_presses < 10000) display.print(' ');
-        if (button_presses < 1000000) display.print(' ');
-        if (button_presses < 100000000) display.print(' ');
+        if (button_presses < 10) display.print(' ');
+        if (button_presses < 1000) display.print(' ');
+        if (button_presses < 100000) display.print(' ');
+        if (button_presses < 10000000) display.print(' ');
+        if (button_presses < 1000000000) display.print(' ');
         display.print(button_presses);
 
         //print scrolling text
@@ -245,7 +247,7 @@ void loop() {
       }
 
       active_message++;
-      if (active_message > 15) active_message = 0;
+      if (active_message > 16) active_message = 0;
       load_message(active_message);
 
       display.clearDisplay();
