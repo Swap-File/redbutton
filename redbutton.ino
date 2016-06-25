@@ -112,15 +112,17 @@ const char string_3[] PROGMEM = "Cake and grief counseling will be available at 
 const char string_4[] PROGMEM = "Thank you for helping us help you help us all.";
 const char string_5[] PROGMEM = "The experiment is nearing its conclusion.";
 const char string_6[] PROGMEM = "Button-based testing remains an important tool for science.";
-const char string_7[] PROGMEM = "The Enrichment Center reminds you that the Button will never threaten to stab you.";
-const char string_8[] PROGMEM = "Prolonged exposure to the Button is not part of this test.";
-const char string_9[] PROGMEM = "Thanks to Emergency Testing Protocols, testing can continue.";
-const char string_10[] PROGMEM = "If you feel liquid running down your neck, relax, lie on your back, and apply immediate pressure to your temples.";
-const char string_11[] PROGMEM = "Because of the technical difficulties we are currently experiencing, your test environment is unsupervised.";
-const char string_12[] PROGMEM = "Some emergency testing may require prolonged interaction with lethal military androids.";
-const char string_13[] PROGMEM = "Testing is the future, and the future starts with you.";
+const char string_7[] PROGMEM = "For your testing convenience, all button related safety precautions have been deactivated.";
+const char string_8[] PROGMEM = "The Enrichment Center reminds you that the Button will never threaten to stab you.";
+const char string_9[] PROGMEM = "Prolonged exposure to the Button is not part of this test.";
+const char string_10[] PROGMEM = "Thanks to Emergency Testing Protocols, testing can continue.";
+const char string_11[] PROGMEM = "If you feel liquid running down your neck, relax, lie on your back, and apply immediate pressure to your temples.";
+const char string_12[] PROGMEM = "Because of the technical difficulties we are currently experiencing, your test environment is unsupervised.";
+const char string_13[] PROGMEM = "Some emergency testing may require prolonged interaction with lethal military androids.";
+const char string_14[] PROGMEM = "Testing is the future, and the future starts with you.";
+const char string_15[] PROGMEM = "To ensure that sufficient power remains for core testing protocols, all safety devices have been disabled.";
 
-const char* const string_table[] PROGMEM = {string_0, string_1, string_2, string_3, string_4, string_5,  string_6, string_7, string_8, string_9, string_10, string_11, string_12, string_13};
+const char* const string_table[] PROGMEM = {string_0, string_1, string_2, string_3, string_4, string_5,  string_6, string_7, string_8, string_9, string_10, string_11, string_12, string_13, string_14, string_15};
 
 int8_t icons[NUMFLAKES][3];//snowflake positions
 
@@ -132,7 +134,6 @@ uint8_t active_message = 0;  //keep track of which message is active
 volatile uint32_t eeprom_updated_time = 0;   //last eeprom update time
 
 volatile boolean idle_mode = true;         //if in idle mode or not
-boolean idle_mode_previous = true;             //previous state of idle mode so main loop knows if we are entering the mode for the first time
 volatile boolean delay_idle_mode_entry = true;  //delay idle mode entry until at least one message has been shown
 
 volatile uint32_t button_presses = 0;  //actual count of button presses
@@ -142,7 +143,7 @@ volatile uint32_t new_press_time = 0;     //time of this button press
 volatile uint16_t clicks_per_minute = 0;  //calculated clicks per minute
 uint16_t clicks_per_minute_max = 0;       //max rating of clicks per minute during the last message cycle
 
-void setup() {
+void setup()   {
 
   button_presses = ReadLongEEPROM(0);
   load_message(active_message);
@@ -189,11 +190,6 @@ void loop() {
   }
   else {
 
-    if (idle_mode_previous) {
-      delay_idle_mode_entry = true;
-      idle_mode_previous = false;
-    }
-
     uint32_t test_user_time = millis();
     while (millis() - test_user_time < 5000) {
 
@@ -202,10 +198,11 @@ void loop() {
       //print counter center padded
       display.setCursor(0, 0);
       //10 digits
-      if (button_presses < 100) display.print(' ');
-      if (button_presses < 10000) display.print(' ');
-      if (button_presses < 1000000) display.print(' ');
-      if (button_presses < 100000000) display.print(' ');
+      if (button_presses < 10) display.print(' ');
+      if (button_presses < 1000) display.print(' ');
+      if (button_presses < 100000) display.print(' ');
+      if (button_presses < 10000000) display.print(' ');
+      if (button_presses < 1000000000) display.print(' ');
       display.print(button_presses);
 
       display.setCursor(0, 16);
@@ -218,34 +215,43 @@ void loop() {
       display.display();
     }
 
-    clicks_per_minute_max = 0;
-    delay_idle_mode_entry = true;
-    for (int i = 0; i < (strlen(temp_buffer) * 6) + 128; i++) {
+
+    if (millis() - new_press_time > 3000 && delay_idle_mode_entry == false)  {
+      idle_mode = true;
+      display.clearDisplay();
+      display.display();
+    } else {
+
+      clicks_per_minute_max = 0;
+      delay_idle_mode_entry = true;
+      for (int i = 0; i < (strlen(temp_buffer) * 6) + 128; i++) {
+
+        display.clearDisplay();
+
+        //print counter center padded
+        display.setCursor(0, 0);
+        //10 digits
+        if (button_presses < 100) display.print(' ');
+        if (button_presses < 10000) display.print(' ');
+        if (button_presses < 1000000) display.print(' ');
+        if (button_presses < 100000000) display.print(' ');
+        display.print(button_presses);
+
+        //print scrolling text
+        display.setCursor(128 - (i * 2), 16);
+        display.print(temp_buffer);
+
+        display.display();
+      }
+
+      active_message++;
+      if (active_message > 15) active_message = 0;
+      load_message(active_message);
 
       display.clearDisplay();
+      delay_idle_mode_entry = false;
 
-      //print counter center padded
-      display.setCursor(0, 0);
-      //10 digits
-      if (button_presses < 100) display.print(' ');
-      if (button_presses < 10000) display.print(' ');
-      if (button_presses < 1000000) display.print(' ');
-      if (button_presses < 100000000) display.print(' ');
-      display.print(button_presses);
-
-      //print scrolling text
-      display.setCursor(128 - (i * 2), 16);
-      display.print(temp_buffer);
-
-      display.display();
     }
-
-    active_message++;
-    if (active_message > 13) active_message = 0;
-    load_message(active_message);
-
-    display.clearDisplay();
-    delay_idle_mode_entry = false;
   }
 
 }
@@ -260,13 +266,12 @@ void housekeeping_function(void) {
     eeprom_updated_time = millis();
   }
 
-  if (millis() - new_press_time > 3000 && delay_idle_mode_entry == false)  {
-    idle_mode = true;
-  }
 }
 
 void press_button() {
   button_presses++;
+  idle_mode = false;
+  delay_idle_mode_entry = true;
   old_press_time = new_press_time;
   new_press_time = millis();
   clicks_per_minute = (clicks_per_minute * .9) +  ((((uint32_t)60000 ) / (new_press_time - old_press_time)) * .1);
@@ -279,7 +284,7 @@ void testdrawbitmap(const uint8_t *bitmap, uint8_t w, uint8_t h) {
     display.drawBitmap(icons[f][XPOS], icons[f][YPOS], bitmap, w, h, WHITE);
   }
   display.display();
-  delay(200);
+  delay(100);
 
   // then erase it + move it
   for (uint8_t f = 0; f < NUMFLAKES; f++) {
