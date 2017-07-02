@@ -144,6 +144,14 @@ volatile uint32_t new_press_time = 0;     //time of this button press
 volatile uint16_t clicks_per_minute = 0;  //calculated clicks per minute
 uint16_t clicks_per_minute_max = 0;       //max rating of clicks per minute during the last message cycle
 
+void display_reinit() {
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
+  display.clearDisplay();
+  display.display();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+}
+
 void setup()   {
 
   button_presses = ReadLongEEPROM(0);
@@ -173,11 +181,7 @@ void setup()   {
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), press_button, RISING);
 
   // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
-  display.clearDisplay();
-  display.display();
-  display.setTextSize(2);
-  display.setTextColor(WHITE);
+  display_reinit();
 
   Timer1.initialize(150000);
   Timer1.attachInterrupt(housekeeping_function); // blinkLED to run every 0.15 seconds
@@ -219,6 +223,7 @@ void loop() {
 
     if (millis() - new_press_time > 3000 && delay_idle_mode_entry == false)  {
       idle_mode = true;
+        display_reinit();
       display.clearDisplay();
       display.display();
     } else {
